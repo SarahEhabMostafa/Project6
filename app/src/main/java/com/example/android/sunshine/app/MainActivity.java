@@ -17,6 +17,9 @@ package com.example.android.sunshine.app;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -29,15 +32,24 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
-import com.example.android.sunshine.app.data.WeatherContract;
 import com.example.android.sunshine.app.gcm.RegistrationIntentService;
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.wearable.MessageApi;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
+import com.google.android.gms.wearable.Wearable;
+import com.sarahehabm.common.WearableConstants;
+import com.sarahehabm.common.data.WeatherContract;
 
-public class MainActivity extends AppCompatActivity implements ForecastFragment.Callback {
+public class MainActivity extends AppCompatActivity implements ForecastFragment.Callback,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
     private final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final String DETAILFRAGMENT_TAG = "DFTAG";
     private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
@@ -46,10 +58,24 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
     private boolean mTwoPane;
     private String mLocation;
 
+    private GoogleApiClient googleApiClient;
+
+    private static final String[] FORECAST_COLUMNS = {
+            WeatherContract.WeatherEntry.COLUMN_WEATHER_ID,
+            WeatherContract.WeatherEntry.COLUMN_SHORT_DESC,
+            WeatherContract.WeatherEntry.COLUMN_MAX_TEMP,
+            WeatherContract.WeatherEntry.COLUMN_MIN_TEMP
+    };
+    // these indices must match the projection
+    private static final int INDEX_WEATHER_ID = 0;
+    private static final int INDEX_SHORT_DESC = 1;
+    private static final int INDEX_MAX_TEMP = 2;
+    private static final int INDEX_MIN_TEMP = 3;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mLocation = Utility.getPreferredLocation(this);
+        mLocation = com.sarahehabm.common.Utility.getPreferredLocation(this);
         Uri contentUri = getIntent() != null ? getIntent().getData() : null;
 
         setContentView(R.layout.activity_main);
@@ -107,6 +133,26 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
                 startService(intent);
             }
         }
+
+        googleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Wearable.API)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        googleApiClient.connect();
+    }
+
+    @Override
+    protected void onStop() {
+        if(googleApiClient!=null && googleApiClient.isConnected())
+            googleApiClient.disconnect();
+
+        super.onStop();
     }
 
     @Override
@@ -135,14 +181,16 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
     @Override
     protected void onResume() {
         super.onResume();
-        String location = Utility.getPreferredLocation( this );
+        String location = com.sarahehabm.common.Utility.getPreferredLocation( this );
         // update the location in our second pane using the fragment manager
             if (location != null && !location.equals(mLocation)) {
-            ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_forecast);
+            ForecastFragment ff = (ForecastFragment)getSupportFragmentManager().
+                    findFragmentById(R.id.fragment_forecast);
             if ( null != ff ) {
                 ff.onLocationChanged();
             }
-            DetailFragment df = (DetailFragment)getSupportFragmentManager().findFragmentByTag(DETAILFRAGMENT_TAG);
+            DetailFragment df = (DetailFragment)getSupportFragmentManager().
+                    findFragmentByTag(DETAILFRAGMENT_TAG);
             if ( null != df ) {
                 df.onLocationChanged(location);
             }
@@ -195,5 +243,79 @@ public class MainActivity extends AppCompatActivity implements ForecastFragment.
             return false;
         }
         return true;
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+        Log.v(TAG, "Should be sending data to watch now");
+
+        // Get today's data from the ContentProvider
+        String location = com.sarahehabm.common.Utility.getPreferredLocation(this);
+        Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
+                location, System.currentTimeMillis());
+        Cursor data = getContentResolver().query(weatherForLocationUri, FORECAST_COLUMNS, null,
+                null, WeatherContract.WeatherEntry.COLUMN_DATE + " ASC");
+        if (data == null) {
+            return;
+        }
+        if (!data.moveToFirst()) {
+            data.close();
+            return;
+        }
+
+        // Extract the weather data from the Cursor
+        int weatherId = data.getInt(INDEX_WEATHER_ID);
+        int weatherArtResourceId = com.sarahehabm.common.Utility.getArtResourceForWeatherCondition(weatherId);
+        double maxTemp = data.getDouble(INDEX_MAX_TEMP);
+        double minTemp = data.getDouble(INDEX_MIN_TEMP);
+        String formattedMaxTemperature = com.sarahehabm.common.Utility.formatTemperature(this, maxTemp);
+        String formattedMinTemperature = com.sarahehabm.common.Utility.formatTemperature(this, minTemp);
+        data.close();
+
+        new SendToDataLayer(WearableConstants.PATH_MIN_TEMP, formattedMinTemperature).start();
+        new SendToDataLayer(WearableConstants.PATH_MAX_TEMP, formattedMaxTemperature).start();
+
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(), weatherArtResourceId);
+        Log.v(TAG, "BitmapToString in MainActivity= " + com.sarahehabm.common.Utility.BitMapToString(bitmap));
+        new SendToDataLayer(WearableConstants.PATH_RES_ID,
+                com.sarahehabm.common.Utility.BitMapToString(bitmap)).start();
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Toast.makeText(this, "Connection suspended!", Toast.LENGTH_SHORT).show();
+        Log.v(TAG, "Connection suspended!");
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Toast.makeText(this, "Connection failed!", Toast.LENGTH_SHORT).show();
+        Log.v(TAG, "Connection failed!");
+    }
+
+    class SendToDataLayer extends Thread {
+        String path, message;
+
+        public SendToDataLayer(String path, String message) {
+            this.path = path;
+            this.message = message;
+        }
+
+        @Override
+        public void run() {
+            NodeApi.GetConnectedNodesResult nodesResult =
+                    Wearable.NodeApi.getConnectedNodes(googleApiClient).await();
+            for (Node node: nodesResult.getNodes()) {
+                MessageApi.SendMessageResult result =
+                        Wearable.MessageApi.sendMessage(googleApiClient, node.getId(), path,
+                                message.getBytes()).await();
+                if(result.getStatus().isSuccess()) {
+                    Log.v(TAG, "Message {" + message + "} sent to: " + node.getDisplayName());
+                } else {
+                    Log.v(TAG, "ERROR! Failed to send message due to the following reason: "
+                            + result.getStatus().getStatusMessage());
+                }
+            }
+        }
     }
 }

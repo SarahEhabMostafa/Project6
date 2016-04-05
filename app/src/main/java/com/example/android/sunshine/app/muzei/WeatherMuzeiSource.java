@@ -20,11 +20,10 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import com.example.android.sunshine.app.MainActivity;
-import com.example.android.sunshine.app.Utility;
-import com.example.android.sunshine.app.data.WeatherContract;
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 import com.google.android.apps.muzei.api.Artwork;
 import com.google.android.apps.muzei.api.MuzeiArtSource;
+import com.sarahehabm.common.data.WeatherContract;
 
 /**
  * Muzei source that changes your background based on the current weather conditions
@@ -54,7 +53,7 @@ public class WeatherMuzeiSource extends MuzeiArtSource {
 
     @Override
     protected void onUpdate(int reason) {
-        String location = Utility.getPreferredLocation(this);
+        String location = com.sarahehabm.common.Utility.getPreferredLocation(this);
         Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
                 location, System.currentTimeMillis());
         Cursor cursor = getContentResolver().query(weatherForLocationUri, FORECAST_COLUMNS, null,
@@ -63,7 +62,7 @@ public class WeatherMuzeiSource extends MuzeiArtSource {
             int weatherId = cursor.getInt(INDEX_WEATHER_ID);
             String desc = cursor.getString(INDEX_SHORT_DESC);
 
-            String imageUrl = Utility.getImageUrlForWeatherCondition(weatherId);
+            String imageUrl = com.sarahehabm.common.Utility.getImageUrlForWeatherCondition(weatherId);
             // Only publish a new wallpaper if we have a valid image
             if (imageUrl != null) {
                 publishArtwork(new Artwork.Builder()

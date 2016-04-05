@@ -15,8 +15,7 @@ import android.widget.RemoteViewsService;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.Target;
 import com.example.android.sunshine.app.R;
-import com.example.android.sunshine.app.Utility;
-import com.example.android.sunshine.app.data.WeatherContract;
+import com.sarahehabm.common.data.WeatherContract;
 
 import java.util.concurrent.ExecutionException;
 
@@ -62,7 +61,7 @@ public class DetailWidgetRemoteViewsService extends RemoteViewsService {
                 // data. Therefore we need to clear (and finally restore) the calling identity so
                 // that calls use our process and permission
                 final long identityToken = Binder.clearCallingIdentity();
-                String location = Utility.getPreferredLocation(DetailWidgetRemoteViewsService.this);
+                String location = com.sarahehabm.common.Utility.getPreferredLocation(DetailWidgetRemoteViewsService.this);
                 Uri weatherForLocationUri = WeatherContract.WeatherEntry
                         .buildWeatherLocationWithStartDate(location, System.currentTimeMillis());
                 data = getContentResolver().query(weatherForLocationUri,
@@ -95,10 +94,10 @@ public class DetailWidgetRemoteViewsService extends RemoteViewsService {
                 RemoteViews views = new RemoteViews(getPackageName(),
                         R.layout.widget_detail_list_item);
                 int weatherId = data.getInt(INDEX_WEATHER_CONDITION_ID);
-                int weatherArtResourceId = Utility.getIconResourceForWeatherCondition(weatherId);
+                int weatherArtResourceId = com.sarahehabm.common.Utility.getIconResourceForWeatherCondition(weatherId);
                 Bitmap weatherArtImage = null;
-                if ( !Utility.usingLocalGraphics(DetailWidgetRemoteViewsService.this) ) {
-                    String weatherArtResourceUrl = Utility.getArtUrlForWeatherCondition(
+                if ( !com.sarahehabm.common.Utility.usingLocalGraphics(DetailWidgetRemoteViewsService.this) ) {
+                    String weatherArtResourceUrl = com.sarahehabm.common.Utility.getArtUrlForWeatherCondition(
                             DetailWidgetRemoteViewsService.this, weatherId);
                     try {
                         weatherArtImage = Glide.with(DetailWidgetRemoteViewsService.this)
@@ -112,14 +111,14 @@ public class DetailWidgetRemoteViewsService extends RemoteViewsService {
                 }
                 String description = data.getString(INDEX_WEATHER_DESC);
                 long dateInMillis = data.getLong(INDEX_WEATHER_DATE);
-                String formattedDate = Utility.getFriendlyDayString(
+                String formattedDate = com.sarahehabm.common.Utility.getFriendlyDayString(
                         DetailWidgetRemoteViewsService.this, dateInMillis, false);
                 double maxTemp = data.getDouble(INDEX_WEATHER_MAX_TEMP);
                 double minTemp = data.getDouble(INDEX_WEATHER_MIN_TEMP);
                 String formattedMaxTemperature =
-                        Utility.formatTemperature(DetailWidgetRemoteViewsService.this, maxTemp);
+                        com.sarahehabm.common.Utility.formatTemperature(DetailWidgetRemoteViewsService.this, maxTemp);
                 String formattedMinTemperature =
-                        Utility.formatTemperature(DetailWidgetRemoteViewsService.this, minTemp);
+                        com.sarahehabm.common.Utility.formatTemperature(DetailWidgetRemoteViewsService.this, minTemp);
                 if (weatherArtImage != null) {
                     views.setImageViewBitmap(R.id.widget_icon, weatherArtImage);
                 } else {
@@ -135,7 +134,7 @@ public class DetailWidgetRemoteViewsService extends RemoteViewsService {
 
                 final Intent fillInIntent = new Intent();
                 String locationSetting =
-                        Utility.getPreferredLocation(DetailWidgetRemoteViewsService.this);
+                        com.sarahehabm.common.Utility.getPreferredLocation(DetailWidgetRemoteViewsService.this);
                 Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
                         locationSetting,
                         dateInMillis);

@@ -33,9 +33,8 @@ import com.bumptech.glide.Glide;
 import com.example.android.sunshine.app.BuildConfig;
 import com.example.android.sunshine.app.MainActivity;
 import com.example.android.sunshine.app.R;
-import com.example.android.sunshine.app.Utility;
-import com.example.android.sunshine.app.data.WeatherContract;
 import com.example.android.sunshine.app.muzei.WeatherMuzeiSource;
+import com.sarahehabm.common.data.WeatherContract;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -98,9 +97,9 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
         // We no longer need just the location String, but also potentially the latitude and
         // longitude, in case we are syncing based on a new Place Picker API result.
         Context context = getContext();
-        String locationQuery = Utility.getPreferredLocation(context);
-        String locationLatitude = String.valueOf(Utility.getLocationLatitude(context));
-        String locationLongitude = String.valueOf(Utility.getLocationLongitude(context));
+        String locationQuery = com.sarahehabm.common.Utility.getPreferredLocation(context);
+        String locationLatitude = String.valueOf(com.sarahehabm.common.Utility.getLocationLatitude(context));
+        String locationLongitude = String.valueOf(com.sarahehabm.common.Utility.getLocationLongitude(context));
 
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
@@ -136,7 +135,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
             // if we have a lat/lon to work with, and use those when we do. Otherwise, the weather
             // service may not understand the location address provided by the Place Picker API
             // and the user could end up with no weather! The horror!
-            if (Utility.isLocationLatLonAvailable(context)) {
+            if (com.sarahehabm.common.Utility.isLocationLatLonAvailable(context)) {
                 uriBuilder.appendQueryParameter(LAT_PARAM, locationLatitude)
                         .appendQueryParameter(LON_PARAM, locationLongitude);
             } else {
@@ -413,7 +412,7 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
 
             if (System.currentTimeMillis() - lastSync >= DAY_IN_MILLIS) {
                 // Last sync was more than 1 day ago, let's send a notification with the weather.
-                String locationQuery = Utility.getPreferredLocation(context);
+                String locationQuery = com.sarahehabm.common.Utility.getPreferredLocation(context);
 
                 Uri weatherUri = WeatherContract.WeatherEntry.buildWeatherLocationWithDate(locationQuery, System.currentTimeMillis());
 
@@ -426,10 +425,10 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                     double low = cursor.getDouble(INDEX_MIN_TEMP);
                     String desc = cursor.getString(INDEX_SHORT_DESC);
 
-                    int iconId = Utility.getIconResourceForWeatherCondition(weatherId);
+                    int iconId = com.sarahehabm.common.Utility.getIconResourceForWeatherCondition(weatherId);
                     Resources resources = context.getResources();
-                    int artResourceId = Utility.getArtResourceForWeatherCondition(weatherId);
-                    String artUrl = Utility.getArtUrlForWeatherCondition(context, weatherId);
+                    int artResourceId = com.sarahehabm.common.Utility.getArtResourceForWeatherCondition(weatherId);
+                    String artUrl = com.sarahehabm.common.Utility.getArtUrlForWeatherCondition(context, weatherId);
 
                     // On Honeycomb and higher devices, we can retrieve the size of the large icon
                     // Prior to that, we use a fixed size
@@ -460,8 +459,8 @@ public class SunshineSyncAdapter extends AbstractThreadedSyncAdapter {
                     // Define the text of the forecast.
                     String contentText = String.format(context.getString(R.string.format_notification),
                             desc,
-                            Utility.formatTemperature(context, high),
-                            Utility.formatTemperature(context, low));
+                            com.sarahehabm.common.Utility.formatTemperature(context, high),
+                            com.sarahehabm.common.Utility.formatTemperature(context, low));
 
                     // NotificationCompatBuilder is a very convenient way to build backward-compatible
                     // notifications.  Just throw in some data.

@@ -45,8 +45,8 @@ import android.view.ViewTreeObserver;
 import android.widget.AbsListView;
 import android.widget.TextView;
 
-import com.example.android.sunshine.app.data.WeatherContract;
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
+import com.sarahehabm.common.data.WeatherContract;
 
 /**
  * Encapsulates fetching the forecast and displaying it as a {@link android.support.v7.widget.RecyclerView} layout.
@@ -188,7 +188,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         mForecastAdapter = new ForecastAdapter(getActivity(), new ForecastAdapter.ForecastAdapterOnClickHandler() {
             @Override
             public void onClick(Long date, ForecastAdapter.ForecastAdapterViewHolder vh) {
-                String locationSetting = Utility.getPreferredLocation(getActivity());
+                String locationSetting = com.sarahehabm.common.Utility.getPreferredLocation(getActivity());
                 ((Callback) getActivity())
                         .onItemSelected(WeatherContract.WeatherEntry.buildWeatherLocationWithDate(
                                         locationSetting, date),
@@ -312,7 +312,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
         // Sort order:  Ascending, by date.
         String sortOrder = WeatherContract.WeatherEntry.COLUMN_DATE + " ASC";
 
-        String locationSetting = Utility.getPreferredLocation(getActivity());
+        String locationSetting = com.sarahehabm.common.Utility.getPreferredLocation(getActivity());
         Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
                 locationSetting, System.currentTimeMillis());
 
@@ -420,7 +420,7 @@ public class ForecastFragment extends Fragment implements LoaderManager.LoaderCa
                         message = R.string.empty_forecast_list_invalid_location;
                         break;
                     default:
-                        if (!Utility.isNetworkAvailable(getActivity())) {
+                        if (!com.sarahehabm.common.Utility.isNetworkAvailable(getActivity())) {
                             message = R.string.empty_forecast_list_no_network;
                         }
                 }

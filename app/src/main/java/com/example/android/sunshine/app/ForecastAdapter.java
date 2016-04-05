@@ -17,20 +17,17 @@ package com.example.android.sunshine.app;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Checkable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.android.sunshine.app.data.WeatherContract;
+import com.sarahehabm.common.data.WeatherContract;
 
 /**
  * {@link ForecastAdapter} exposes a list of weather forecasts
@@ -131,19 +128,19 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
 
         switch (getItemViewType(position)) {
             case VIEW_TYPE_TODAY:
-                defaultImage = Utility.getArtResourceForWeatherCondition(weatherId);
+                defaultImage = com.sarahehabm.common.Utility.getArtResourceForWeatherCondition(weatherId);
                 useLongToday = true;
                 break;
             default:
-                defaultImage = Utility.getIconResourceForWeatherCondition(weatherId);
+                defaultImage = com.sarahehabm.common.Utility.getIconResourceForWeatherCondition(weatherId);
                 useLongToday = false;
         }
 
-        if ( Utility.usingLocalGraphics(mContext) ) {
+        if ( com.sarahehabm.common.Utility.usingLocalGraphics(mContext) ) {
             forecastAdapterViewHolder.mIconView.setImageResource(defaultImage);
         } else {
             Glide.with(mContext)
-                    .load(Utility.getArtUrlForWeatherCondition(mContext, weatherId))
+                    .load(com.sarahehabm.common.Utility.getArtUrlForWeatherCondition(mContext, weatherId))
                     .error(defaultImage)
                     .crossFade()
                     .into(forecastAdapterViewHolder.mIconView);
@@ -157,10 +154,10 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
         long dateInMillis = mCursor.getLong(ForecastFragment.COL_WEATHER_DATE);
 
         // Find TextView and set formatted date on it
-        forecastAdapterViewHolder.mDateView.setText(Utility.getFriendlyDayString(mContext, dateInMillis, useLongToday));
+        forecastAdapterViewHolder.mDateView.setText(com.sarahehabm.common.Utility.getFriendlyDayString(mContext, dateInMillis, useLongToday));
 
         // Read weather forecast from cursor
-        String description = Utility.getStringForWeatherCondition(mContext, weatherId);
+        String description = com.sarahehabm.common.Utility.getStringForWeatherCondition(mContext, weatherId);
 
         // Find TextView and set weather forecast on it
         forecastAdapterViewHolder.mDescriptionView.setText(description);
@@ -172,13 +169,13 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
 
         // Read high temperature from cursor
         double high = mCursor.getDouble(ForecastFragment.COL_WEATHER_MAX_TEMP);
-        String highString = Utility.formatTemperature(mContext, high);
+        String highString = com.sarahehabm.common.Utility.formatTemperature(mContext, high);
         forecastAdapterViewHolder.mHighTempView.setText(highString);
         forecastAdapterViewHolder.mHighTempView.setContentDescription(mContext.getString(R.string.a11y_high_temp, highString));
 
         // Read low temperature from cursor
         double low = mCursor.getDouble(ForecastFragment.COL_WEATHER_MIN_TEMP);
-        String lowString = Utility.formatTemperature(mContext, low);
+        String lowString = com.sarahehabm.common.Utility.formatTemperature(mContext, low);
         forecastAdapterViewHolder.mLowTempView.setText(lowString);
         forecastAdapterViewHolder.mLowTempView.setContentDescription(mContext.getString(R.string.a11y_low_temp, lowString));
 

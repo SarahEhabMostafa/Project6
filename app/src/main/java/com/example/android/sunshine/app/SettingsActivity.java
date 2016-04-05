@@ -26,10 +26,9 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import com.example.android.sunshine.app.data.WeatherContract;
+import com.sarahehabm.common.data.WeatherContract;
 import com.example.android.sunshine.app.sync.SunshineSyncAdapter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
@@ -66,7 +65,7 @@ public class SettingsActivity extends PreferenceActivity
             mAttribution = new ImageView(this);
             mAttribution.setImageResource(R.drawable.powered_by_google_light);
 
-            if (!Utility.isLocationLatLonAvailable(this)) {
+            if (!com.sarahehabm.common.Utility.isLocationLatLonAvailable(this)) {
                 mAttribution.setVisibility(View.GONE);
             }
 

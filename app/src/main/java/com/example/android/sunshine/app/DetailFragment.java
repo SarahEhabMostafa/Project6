@@ -25,7 +25,6 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
-import android.support.v7.widget.ShareActionProvider;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -38,8 +37,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.android.sunshine.app.data.WeatherContract;
-import com.example.android.sunshine.app.data.WeatherContract.WeatherEntry;
+import com.sarahehabm.common.data.WeatherContract;
+import com.sarahehabm.common.data.WeatherContract.WeatherEntry;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -200,24 +199,24 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             // Read weather condition ID from cursor
             int weatherId = data.getInt(COL_WEATHER_CONDITION_ID);
 
-            if ( Utility.usingLocalGraphics(getActivity()) ) {
-                mIconView.setImageResource(Utility.getArtResourceForWeatherCondition(weatherId));
+            if ( com.sarahehabm.common.Utility.usingLocalGraphics(getActivity()) ) {
+                mIconView.setImageResource(com.sarahehabm.common.Utility.getArtResourceForWeatherCondition(weatherId));
             } else {
                 // Use weather art image
                 Glide.with(this)
-                        .load(Utility.getArtUrlForWeatherCondition(getActivity(), weatherId))
-                        .error(Utility.getArtResourceForWeatherCondition(weatherId))
+                        .load(com.sarahehabm.common.Utility.getArtUrlForWeatherCondition(getActivity(), weatherId))
+                        .error(com.sarahehabm.common.Utility.getArtResourceForWeatherCondition(weatherId))
                         .crossFade()
                         .into(mIconView);
             }
 
             // Read date from cursor and update views for day of week and date
             long date = data.getLong(COL_WEATHER_DATE);
-            String dateText = Utility.getFullFriendlyDayString(getActivity(),date);
+            String dateText = com.sarahehabm.common.Utility.getFullFriendlyDayString(getActivity(),date);
             mDateView.setText(dateText);
 
             // Get description from weather condition ID
-            String description = Utility.getStringForWeatherCondition(getActivity(), weatherId);
+            String description = com.sarahehabm.common.Utility.getStringForWeatherCondition(getActivity(), weatherId);
             mDescriptionView.setText(description);
             mDescriptionView.setContentDescription(getString(R.string.a11y_forecast, description));
 
@@ -228,16 +227,16 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             mIconView.setContentDescription(getString(R.string.a11y_forecast_icon, description));
 
             // Read high temperature from cursor and update view
-            boolean isMetric = Utility.isMetric(getActivity());
+            boolean isMetric = com.sarahehabm.common.Utility.isMetric(getActivity());
 
             double high = data.getDouble(COL_WEATHER_MAX_TEMP);
-            String highString = Utility.formatTemperature(getActivity(), high);
+            String highString = com.sarahehabm.common.Utility.formatTemperature(getActivity(), high);
             mHighTempView.setText(highString);
             mHighTempView.setContentDescription(getString(R.string.a11y_high_temp, highString));
 
             // Read low temperature from cursor and update view
             double low = data.getDouble(COL_WEATHER_MIN_TEMP);
-            String lowString = Utility.formatTemperature(getActivity(), low);
+            String lowString = com.sarahehabm.common.Utility.formatTemperature(getActivity(), low);
             mLowTempView.setText(lowString);
             mLowTempView.setContentDescription(getString(R.string.a11y_low_temp, lowString));
 
@@ -250,7 +249,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             // Read wind speed and direction from cursor and update view
             float windSpeedStr = data.getFloat(COL_WEATHER_WIND_SPEED);
             float windDirStr = data.getFloat(COL_WEATHER_DEGREES);
-            mWindView.setText(Utility.getFormattedWind(getActivity(), windSpeedStr, windDirStr));
+            mWindView.setText(com.sarahehabm.common.Utility.getFormattedWind(getActivity(), windSpeedStr, windDirStr));
             mWindView.setContentDescription(getString(R.string.a11y_wind, mWindView.getText()));
             mWindLabelView.setContentDescription(mWindView.getContentDescription());
 

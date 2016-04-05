@@ -31,8 +31,7 @@ import android.widget.RemoteViews;
 
 import com.example.android.sunshine.app.MainActivity;
 import com.example.android.sunshine.app.R;
-import com.example.android.sunshine.app.Utility;
-import com.example.android.sunshine.app.data.WeatherContract;
+import com.sarahehabm.common.data.WeatherContract;
 
 /**
  * IntentService which handles updating all Today widgets with the latest data
@@ -62,7 +61,7 @@ public class TodayWidgetIntentService extends IntentService {
                 TodayWidgetProvider.class));
 
         // Get today's data from the ContentProvider
-        String location = Utility.getPreferredLocation(this);
+        String location = com.sarahehabm.common.Utility.getPreferredLocation(this);
         Uri weatherForLocationUri = WeatherContract.WeatherEntry.buildWeatherLocationWithStartDate(
                 location, System.currentTimeMillis());
         Cursor data = getContentResolver().query(weatherForLocationUri, FORECAST_COLUMNS, null,
@@ -77,12 +76,12 @@ public class TodayWidgetIntentService extends IntentService {
 
         // Extract the weather data from the Cursor
         int weatherId = data.getInt(INDEX_WEATHER_ID);
-        int weatherArtResourceId = Utility.getArtResourceForWeatherCondition(weatherId);
+        int weatherArtResourceId = com.sarahehabm.common.Utility.getArtResourceForWeatherCondition(weatherId);
         String description = data.getString(INDEX_SHORT_DESC);
         double maxTemp = data.getDouble(INDEX_MAX_TEMP);
         double minTemp = data.getDouble(INDEX_MIN_TEMP);
-        String formattedMaxTemperature = Utility.formatTemperature(this, maxTemp);
-        String formattedMinTemperature = Utility.formatTemperature(this, minTemp);
+        String formattedMaxTemperature = com.sarahehabm.common.Utility.formatTemperature(this, maxTemp);
+        String formattedMinTemperature = com.sarahehabm.common.Utility.formatTemperature(this, minTemp);
         data.close();
 
         // Perform this loop procedure for each Today widget

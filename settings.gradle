@@ -1,1 +1,1 @@
-include ':app', ':sunshinewearable'
+include ':app', ':sunshinewearable', ':common'
